@@ -1,0 +1,46 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Apr 24 17:56:53 2021
+
+@author: HATICE MERVE ARSLAN
+"""
+#libraries
+from selenium import webdriver
+from bs4 import BeautifulSoup as bs
+import codecs
+import pandas as pd
+
+#create browser for Chrome 
+driver = webdriver.Chrome()
+driver.get("https://twitter.com/search?q=%22request%20for%20startup%22&src=typed_query&f=live") 
+
+p_source = driver.page_source
+soup = bs(p_source, "html.parser")
+# in theory that code should get the code. is it tho? No
+tweets = soup.find_elements_by_xpath("/html/body/div/div/div/div[2]/main/div/div/div/div/div/div[2]/div/div/section/div/div")
+
+for tweets in tweets:
+    author = tweets.find('div', xpath='//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[1]/div/div[2]/div/section/div/div/div[2]/div/div/article/div/div/div/div[2]/div[2]/div[1]/div/div[1]/div[1]/div[1]/a/div/div[1]').text 
+    date = tweets.find('a', xpath='//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[1]/div/div[2]/div/section/div/div/div[2]/div/div/article/div/div/div/div[2]/div[2]/div[1]/div/div[1]/div[1]/a').text
+    likes = tweets.find('div', xpath='//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[1]/div/div[2]/div/section/div/div/div[2]/div/div/article/div/div/div/div[2]/div[2]/div[2]/div[3]/div[3]/div/div/div[2]').text
+    retweet = tweets.find('div', xpath='//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[1]/div/div[2]/div/section/div/div/div[2]/div/div/article/div/div/div/div[2]/div[2]/div[2]/div[3]/div[2]/div/div/div[2]').text
+    discussion = tweets.find('div', xpath='//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[1]/div/div[2]/div/section/div/div/div[2]/div/div/article/div/div/div/div[2]/div[2]/div[2]/div[3]/div[1]/div/div/div[2]').text
+    content = tweets.find('div', xpath='//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[1]/div/div[2]/div/section/div/div/div[2]/div/div/article/div/div/div/div[2]/div[2]/div[2]/div[1]/div').text
+    if None in (author, date, likes, retweet, discussion, content):
+        continue
+        
+# create table
+pg = pd.dataframe(tweets)
+html = pg.to_html()
+
+# export table
+file = codecs.open("tweets.html", "x", "utf-8")
+file.write(html)
+file.close()
+
+'''
+Due to twitter's policy on scraping, 
+"scraping the Services without the prior consent of Twitter is expressly prohibited"
+and due to constantly changing class names,
+I find it impossible to finish this task. But at least I tried =)
+'''
